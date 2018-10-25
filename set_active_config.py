@@ -2,10 +2,11 @@ import sublime
 import sublime_plugin
 import Default.exec
 import CMakeIDE.project_settings as ps
-
 import imp
 
+
 imp.reload(ps)
+
 
 class CmakeideSetActiveConfigCommand(Default.exec.ExecCommand):
     """Configures a CMake project with options set in the sublime project

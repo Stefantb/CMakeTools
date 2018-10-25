@@ -62,8 +62,6 @@ class Configuration():
         return build_folder.format(**self.data())
 
 
-
-
 class CmakeIDESettings():
     """docstring for CmakeIDESettings"""
 
@@ -78,7 +76,8 @@ class CmakeIDESettings():
     def commit(self):
         """Commit the state of this object to file"""
         project_data = self.window.project_data()
-        project_data['settings'] = {'cmake_ide': self._cmake_settings}
+        project_data.setdefault('settings', {}).setdefault('cmake_ide', {})
+        project_data['settings']['cmake_ide'] = self._cmake_settings
         self.window.set_project_data(project_data)
 
     @property
