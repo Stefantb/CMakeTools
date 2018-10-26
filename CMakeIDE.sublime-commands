@@ -1,10 +1,10 @@
 [
   {
-    "command": "example",
-    "caption": "CMakeIDE: Browse Build Folder…"
-  },
-  {
     "command": "cmakeide_set_active_config",
     "caption": "CMakeIDE: Set Active Config"
+  },
+  {
+    "command": "cmakeide_configure",
+    "caption": "CMakeIDE: Configure"
   }
 ]

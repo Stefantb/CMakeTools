@@ -1,0 +1,56 @@
+[
+    {
+        "caption": "Tools",
+        "mnemonic": "T",
+        "id": "tools",
+        "children":
+        [
+            {
+                "caption": "CMakeIDE",
+                "id": "build_cmake_ide",
+                "mnemonic": "C",
+                "children":
+                [
+                    // NOTE: The "captions" for these commands is given by
+                    // the `description` method of the respective command.
+                    {
+                        "caption" : "Set Active Config",
+                        "command": "show_overlay",
+                        "args": {"overlay": "command_palette", "text": "CMakeIDE: Set Active Config"},
+                        "mnemonic": "o",
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "caption": "Preferences",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "CMakeIDE",
+                        "id": "cmakeide",
+                        "children":
+                        [
+                            {
+                                "command": "edit_settings",
+                                "caption": "Settings",
+                                "mnemonic": "S",
+                                "args":
+                                {
+                                    "base_file": "${packages}/CMakeIDE/CMakeIDE.sublime-settings"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

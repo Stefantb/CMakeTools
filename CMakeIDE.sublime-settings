@@ -1,0 +1,8 @@
+{
+    "cmake_binary" : "cmake",
+    "copy_compile_commands_to_project_path": true,
+    "toolchains" : [
+        "/home/stefantb/Dev/Docker/tools/toolchain-pluto-host.cmake"
+    ],
+    "auto_update_EasyClangComplete_compile_commands_location": false
+}
