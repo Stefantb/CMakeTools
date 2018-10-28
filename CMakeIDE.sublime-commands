@@ -6,5 +6,9 @@
   {
     "command": "cmakeide_configure",
     "caption": "CMakeIDE: Configure"
+  },
+  {
+    "command": "cmakeide_clear_cache",
+    "caption": "CMakeIDE: Clear cache"
   }
 ]
