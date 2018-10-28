@@ -5,7 +5,12 @@ import sublime
 import sublime_plugin
 
 import CMakeIDE.project_settings as ps
+import CMakeIDE.cmake_server as cmake_server
+
+
 imp.reload(ps)
+imp.reload(cmake_server)
+
 
 # Note: Things in "CMakeFiles" folders get removed anyway. This is where you put
 # files that should be removed but are not inside CMakeFiles folders.
@@ -103,3 +108,6 @@ class CmakeideClearCacheCommand(sublime_plugin.WindowCommand):
 
             self.window.show_quick_panel(['Do it', 'Cancel'], on_done,
                                          sublime.KEEP_OPEN_ON_FOCUS_LOST)
+
+            server = cmake_server.get_cmake_server(self.window)
+            server.is_configured = False
