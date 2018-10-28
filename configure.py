@@ -1,7 +1,5 @@
 import imp
 
-import sublime
-import sublime_plugin
 import Default.exec
 
 import CMakeIDE.cmake_server as cmake_server

@@ -1,4 +1,3 @@
-import os
 import imp
 
 import sublime
@@ -57,7 +56,8 @@ def get_syntax_and_regex(generator):
             file_regex = r'^(.+)\((\d+)\):() (.+)$'
             syntax = "Packages/CMakeBuilder/Syntax/Ninja+CL.sublime-syntax"
         elif "Visual Studio" in generator:
-            file_regex = (r'^  (.+)\((\d+)\)(): ((?:fatal )?(?:error|warning) ', r'\w+\d\d\d\d: .*) \[.*$')
+            file_regex = (
+                r'^  (.+)\((\d+)\)(): ((?:fatal )?(?:error|warning) ', r'\w+\d\d\d\d: .*) \[.*$')
             syntax = "Packages/CMakeBuilder/Syntax/Visual_Studio.sublime-syntax"
         elif "NMake" in generator:
             file_regex = r'^(.+)\((\d+)\):() (.+)$'
@@ -84,7 +84,8 @@ class CmakeideBuildCommand(sublime_plugin.WindowCommand):
 
         if server.is_configured:
             targets = server.targets()
-            target = next((target for target in targets if target.name == target_name), None)
+            target = next(
+                (target for target in targets if target.name == target_name), None)
 
             if target:
 

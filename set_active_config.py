@@ -1,12 +1,11 @@
 import imp
 
-import sublime
 import sublime_plugin
-import Default.exec
 
 import CMakeIDE.project_settings as ps
-imp.reload(ps)
 import CMakeIDE.cmake_server as cmake_server
+
+imp.reload(ps)
 imp.reload(cmake_server)
 
 
@@ -38,13 +37,10 @@ class NewConfigNameHandler(sublime_plugin.TextInputHandler):
                        source_folder='${folder}'
                        )
 
-
         self.settings.configurations += [ps.Configuration(data=newitem)]
         self.settings.commit()
 
-
         print('confirm {}'.format(text))
-        self.new_config_name = text
         return True
 
     def preview(self, text):
@@ -53,10 +49,8 @@ class NewConfigNameHandler(sublime_plugin.TextInputHandler):
         else:
             return '{} exists already !'.format(text)
 
-
     def next_input(self, args):
         print('next_input {}'.format(args))
-        return None
 
     def name(self):
         return 'new_config_name'
