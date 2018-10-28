@@ -85,7 +85,7 @@ class CmakeideBuildCommand(sublime_plugin.WindowCommand):
         if server.is_configured:
             targets = server.targets()
             target = next(
-                (target for target in targets if target.name == target_name), None)
+                (target for target in targets if target.id_name == target_name), None)
 
             if target:
 

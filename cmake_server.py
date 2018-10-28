@@ -20,13 +20,15 @@ class Target(object):
     # possible_types_from_cmake = ['STATIC_LIBRARY', 'MODULE_LIBRARY', 'SHARED_LIBRARY', 'OBJECT_LIBRARY', 'EXECUTABLE', 'UTILITY', 'INTERFACE_LIBRARY']
     # adding an ALL type for the build all target
 
-    __slots__ = ("name", "fullname", "type", "build_directory")
+    __slots__ = ("name", "fullname", "id_name", "type", "build_directory", "is_rebuild")
 
-    def __init__(self, name, fullname, type, build_directory):
+    def __init__(self, name, fullname, id_name, type, build_directory, is_rebuild=False):
         self.name = name
         self.fullname = fullname
+        self.id_name = id_name
         self.type = type
         self.build_directory = build_directory
+        self.is_rebuild = is_rebuild
 
     def __repr__(self):
         return self.__str__()
@@ -42,11 +44,14 @@ class Target(object):
     def __hash__(self):
         return hash(self.name)
 
-    def build_cmd(self, cmake_binary_pathy):
-        result = [cmake_binary_pathy, "--build", "."]
+    def build_cmd(self, cmake_binary_path):
+        result = [cmake_binary_path, "--build", "."]
 
         if self.type != "ALL":
             result.extend(["--target", self.name])
+
+        if self.is_rebuild:
+            result.extend(["--clean-first"])
 
         return result
 
@@ -57,7 +62,8 @@ class Target(object):
 def get_capabilities(cmake_binary):
 
     try:
-        command = "{cmake_binary} -E capabilities".format(cmake_binary=cmake_binary)
+        command = "{cmake_binary} -E capabilities".format(
+            cmake_binary=cmake_binary)
         print("running", command)
         output = check_output(command)
         return json.loads(output)
@@ -76,6 +82,8 @@ def get_capabilities(cmake_binary):
 #
 # *****************************************************************************
 _this_dir = os.path.dirname(os.path.realpath(__file__))
+
+
 def update_build_targets(window, targets):
     build_system_file = os.path.join(_this_dir, 'CMakeIDE.sublime-build')
 
@@ -84,10 +92,10 @@ def update_build_targets(window, targets):
         content = json.loads(f.read())
 
     content['variants'] = [
-            {
-                "name": target.name,
-                "target_name": target.name
-            } for target in targets]
+        {
+            "name": target.id_name,
+            "target_name": target.id_name
+        } for target in targets]
 
     with open(build_system_file, 'w') as f:
         f.write(json.dumps(content, indent=4))
@@ -97,6 +105,8 @@ def update_build_targets(window, targets):
 #
 # *****************************************************************************
 _servers = {}
+
+
 def get_cmake_server(window, recreate=False):
     global _servers
 
@@ -108,7 +118,8 @@ def get_cmake_server(window, recreate=False):
         print('Instantiating new server for window {}'.format(window.id()))
         settings = ps.CmakeIDESettings(window)
         cmake_binary = settings.get_multilevel_setting('cmake_binary')
-        server = CmakeServer(window, cmake_binary, settings.current_configuration)
+        server = CmakeServer(window, cmake_binary,
+                             settings.current_configuration)
         _servers[window.id()] = server
     else:
         print('Server found for window {}'.format(window.id()))
@@ -120,8 +131,8 @@ def get_cmake_server(window, recreate=False):
 # *****************************************************************************
 def enhance_compilation_db_with_header_info(build_folder):
     compile_commands_path = os.path.join(
-                        build_folder,
-                        "compile_commands.json")
+        build_folder,
+        "compile_commands.json")
 
     db = JSONCompilationDatabase.probe_directory(build_folder)
     headerdb = make_headerdb([[db]])[0]
@@ -142,7 +153,8 @@ def enhance_compilation_db_with_header_info(build_folder):
 def handle_compdb(window):
     settings = ps.CmakeIDESettings(window)
     build_folder = settings.current_configuration.build_folder_expanded(window)
-    source_folder = settings.current_configuration.source_folder_expanded(window)
+    source_folder = settings.current_configuration.source_folder_expanded(
+        window)
     compile_commands_path = os.path.join(build_folder, "compile_commands.json")
 
     if settings.get_multilevel_setting("enhance_compile_commands_with_header_info", False):
@@ -209,7 +221,7 @@ class CmakeServer(Default.exec.ProcessListener):
     # *****************************************************************************
     def _start_connection(self):
         cmd = [self.cmake_binary_path, "-E", "server"]
-        env={}
+        env = {}
         experimental = True
         debug = True
         if experimental:
@@ -306,7 +318,7 @@ class CmakeServer(Default.exec.ProcessListener):
             "protocolVersion": self.protocoldict,
             "sourceDirectory": self.cmake_configuration.source_folder_expanded(self.window),
             "buildDirectory": self.cmake_configuration.build_folder_expanded(self.window),
-            "generator": self.cmake_configuration.generator #,
+            "generator": self.cmake_configuration.generator  # ,
             # "platform": self.cmake.platform,
             # "toolset": self.cmake.toolset
         })
@@ -332,11 +344,14 @@ class CmakeServer(Default.exec.ProcessListener):
         view = window.create_output_panel("cmake.configure", True)
         view.settings().set("result_file_regex", r'CMake\s(?:Error|Warning)'
                             r'(?:\s\(dev\))?\sat\s(.+):(\d+)()\s?\(?(\w*)\)?:')
-        view.settings().set("result_base_dir", self.cmake_configuration.source_folder_expanded(self.window))
-        view.set_syntax_file("Packages/CMakeBuilder/Syntax/Configure.sublime-syntax")
+        view.settings().set("result_base_dir",
+                            self.cmake_configuration.source_folder_expanded(self.window))
+        view.set_syntax_file(
+            "Packages/CMakeBuilder/Syntax/Configure.sublime-syntax")
         window.run_command("show_panel", {"panel": "output.cmake.configure"})
 
-        self._send_dict({"type": "configure", "cacheArguments": self._get_configure_arguments()})
+        self._send_dict(
+            {"type": "configure", "cacheArguments": self._get_configure_arguments()})
 
     def _compute(self):
         self._send_dict({"type": "compute"})
@@ -464,19 +479,36 @@ class CmakeServer(Default.exec.ProcessListener):
                 targets = project.get('targets')
                 for target in targets:
                     target_name = target.get('name')
-                    target_fullname = target.get('fullName', target_name)  # includes extensions an such
+                    # includes extensions an such
+                    target_fullname = target.get('fullName', target_name)
                     target_type = target.get('type')
                     target_build_directory = target.get('buildDirectory')
                     # target_artifacts = target.get('artifacts')
                     self._targets.append(Target(name=target_name,
                                                 fullname=target_fullname,
+                                                id_name=target_name,
                                                 type=target_type,
                                                 build_directory=target_build_directory))
+
+                    self._targets.append(Target(name=target_name,
+                                                fullname=target_fullname,
+                                                id_name=target_name + '-rebuild',
+                                                type=target_type,
+                                                build_directory=target_build_directory,
+                                                is_rebuild=True))
 
         # Then a build all target
         self._targets.append(Target(name='BUILD ALL',
                                     fullname='BUILD ALL',
+                                    id_name="BUILD ALL",
                                     type='ALL',
+                                    build_directory=self.cmake_configuration.build_folder_expanded(self.window)))
+
+        # Then a clean all target
+        self._targets.append(Target(name='clean',
+                                    fullname='clean',
+                                    id_name='clean',
+                                    type='CLEAN',
                                     build_directory=self.cmake_configuration.build_folder_expanded(self.window)))
 
         update_build_targets(self.window, self._targets)
@@ -589,8 +621,6 @@ class CmakeServer(Default.exec.ProcessListener):
             self.bad_configure = True
             self.window.run_command("show_panel",
                                     {"panel": "output.cmake.configure"})
-
-
 
 
 # Capabilities
