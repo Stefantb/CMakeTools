@@ -334,7 +334,7 @@ class CmakeServer(Default.exec.ProcessListener):
                             r'(?:\s\(dev\))?\sat\s(.+):(\d+)()\s?\(?(\w*)\)?:')
         view.settings().set("result_base_dir", self.cmake_configuration.source_folder_expanded(self.window))
         view.set_syntax_file("Packages/CMakeBuilder/Syntax/Configure.sublime-syntax")
-        window.run_command("show_panel", {"panel": "cmake.configure"})
+        window.run_command("show_panel", {"panel": "output.cmake.configure"})
 
         self._send_dict({"type": "configure", "cacheArguments": self._get_configure_arguments()})
 
@@ -458,13 +458,13 @@ class CmakeServer(Default.exec.ProcessListener):
 
             projects = configuration.get('projects')
             for project in projects:
-                project_name = project.get('name')
-                project_build_directory = project.get('buildDirectory')
+                # project_name = project.get('name')
+                # project_build_directory = project.get('buildDirectory')
 
                 targets = project.get('targets')
                 for target in targets:
                     target_name = target.get('name')
-                    target_fullname = target.get('fullName', target_name)  #includes extensions an such
+                    target_fullname = target.get('fullName', target_name)  # includes extensions an such
                     target_type = target.get('type')
                     target_build_directory = target.get('buildDirectory')
                     # target_artifacts = target.get('artifacts')

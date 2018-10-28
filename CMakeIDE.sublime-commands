@@ -9,6 +9,11 @@
   },
   {
     "command": "cmakeide_clear_cache",
-    "caption": "CMakeIDE: Clear cache"
+    "caption": "CMakeIDE: Clear Cache"
+  },
+  {
+    "command": "cmakeide_show_panel",
+    "args":{"panel_id": "cmake.configure"},
+    "caption": "CMakeIDE: Show Config Panel"
   }
 ]
