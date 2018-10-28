@@ -89,6 +89,12 @@ class CmakeIDESettings():
         self.window.set_project_data(project_data)
 
     @property
+    def is_cmake_project(self):
+        """Returns True if settings and cmake_ide exist in the project file"""
+        project_data = self.window.project_data()
+        return 'cmake_ide' in project_data.setdefault('settings', {})
+
+    @property
     def current_configuration_name(self):
         """Returns none if not defined in the file"""
         return self._data.get('current_configuration_name', None)
