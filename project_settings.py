@@ -49,6 +49,14 @@ class Configuration():
         self._data['name'] = name
 
     @property
+    def build_target(self):
+        return self._data.get('build_target', '')
+
+    @build_target.setter
+    def build_target(self, build_target):
+        self._data['build_target'] = build_target
+
+    @property
     def build_folder(self):
         return self._data.get('build_folder', '')
 
@@ -119,7 +127,7 @@ class CmakeIDESettings():
         return next((x for x in self.configurations if x.name == name), None)
 
     @property
-    def current_configuration(self):
+    def current_configuration(self) -> Configuration:
         """Returns none if not defined in the file"""
         if self.current_configuration_name:
             return self.find_configuration_by_name(self.current_configuration_name)

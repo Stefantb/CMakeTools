@@ -1,14 +1,4 @@
 {
-    "selector": "source.cmake | source.c | source.c++ | source.c++11", 
-    "target": "cmakeide_build", 
-    "variants": [
-        {
-            "target_name": "packml_unit", 
-            "name": "packml_unit"
-        }, 
-        {
-            "target_name": "BUILD ALL", 
-            "name": "BUILD ALL"
-        }
-    ]
+    "selector": "source.cmake | source.c | source.c++ | source.c++11",
+    "target": "cmakeide_build"
 }

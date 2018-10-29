@@ -1,10 +1,14 @@
 import imp
+import time
 
 import sublime
 import sublime_plugin
 import Default.exec
 
+import CMakeIDE.project_settings as ps
 import CMakeIDE.cmake_server as cmake_server
+
+imp.reload(ps)
 imp.reload(cmake_server)
 
 
@@ -78,14 +82,26 @@ class CmakeideBuildCommand(sublime_plugin.WindowCommand):
 
         print('build called with {} {}'.format(args, kwargs))
 
-        target_name = kwargs.get('target_name', 'BUILD ALL')
-
         server = cmake_server.get_cmake_server(self.window)
 
-        if server.is_configured:
-            targets = server.targets()
+        if not server.is_configured:
+            server.configure()
+            return
+
+        targets = server.targets()
+
+        if kwargs.get('choose_target', False):
+            self.current_target_selection = [item.id_name for item in targets]
+            self.window.show_quick_panel(self.current_target_selection,
+                                         self.on_new_build_target_selected)
+        else:
+
+            build_target_id = kwargs.get('build_target_id', None)
+            if build_target_id is None:
+                build_target_id = ps.CmakeIDESettings(self.window).current_configuration.build_target
+
             target = next(
-                (target for target in targets if target.id_name == target_name), None)
+                (target for target in targets if target.id_name == build_target_id), None)
 
             if target:
 
@@ -100,5 +116,15 @@ class CmakeideBuildCommand(sublime_plugin.WindowCommand):
                         "working_dir": server.cmake_configuration.build_folder_expanded(self.window)
                     }
                 )
-        else:
-            server.configure()
+
+    def on_new_build_target_selected(self, index):
+        selected_target = self.current_target_selection[index]
+        print('build target {} selected'.format(selected_target))
+
+        settings = ps.CmakeIDESettings(self.window)
+        current = settings.current_configuration
+        if current:
+            current.build_target = selected_target
+
+            self.window.run_command("cmakeide_build", {"build_target_id": selected_target})
+            settings.commit()

@@ -10,8 +10,8 @@ import Default.exec
 
 from . import compdb_api
 
-from CMakeIDE.check_output import check_output
-import CMakeIDE.project_settings as ps
+from .check_output import check_output
+from . import project_settings as ps
 imp.reload(ps)
 
 
@@ -83,29 +83,6 @@ def get_capabilities(cmake_binary):
 # *****************************************************************************
 #
 # *****************************************************************************
-_this_dir = os.path.dirname(os.path.realpath(__file__))
-
-
-def update_build_targets(window, targets):
-    build_system_file = os.path.join(_this_dir, 'CMakeIDE.sublime-build')
-
-    content = {}
-    with open(build_system_file) as f:
-        content = json.loads(f.read())
-
-    content['variants'] = [
-        {
-            "name": target.id_name,
-            "target_name": target.id_name
-        } for target in targets]
-
-    with open(build_system_file, 'w') as f:
-        f.write(json.dumps(content, indent=4))
-
-
-# *****************************************************************************
-#
-# *****************************************************************************
 _servers = {}
 
 
@@ -131,7 +108,7 @@ def get_cmake_server(window, recreate=False):
 # *****************************************************************************
 #
 # *****************************************************************************
-def handle_compdb(window):
+def on_config_complete(window):
     settings = ps.CmakeIDESettings(window)
     build_folder = settings.current_configuration.build_folder_expanded(window)
     source_folder = settings.current_configuration.source_folder_expanded(
@@ -495,8 +472,7 @@ class CmakeServer(Default.exec.ProcessListener):
                                     type='CLEAN',
                                     build_directory=self.cmake_configuration.build_folder_expanded(self.window)))
 
-        update_build_targets(self.window, self._targets)
-        handle_compdb(self.window)
+        on_config_complete(self.window)
         self.is_configured = True
 
     def _handle_reply_cache(self, thedict) -> None:

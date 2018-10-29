@@ -11,6 +11,6 @@ imp.reload(cmake_server)
 # *****************************************************************************
 class CmakeideConfigureCommand(Default.exec.ExecCommand):
 
-    def run(self):
-        server = cmake_server.get_cmake_server(self.window)
+    def run(self, recreate=None, **kwargs):
+        server = cmake_server.get_cmake_server(self.window, recreate)
         server.configure()
