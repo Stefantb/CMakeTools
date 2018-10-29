@@ -5,15 +5,16 @@ import io
 import itertools
 import os
 
-import compdb
-from compdb.backend.json import (JSONCompilationDatabase,
+
+from .backend.json import (JSONCompilationDatabase,
                                  compile_commands_to_json)
-from compdb.backend.memory import InMemoryCompilationDatabase
-from compdb.models import (CompilationDatabaseInterface, ProbeError)
-from compdb.utils import (suppress, re_fullmatch, empty_iterator_wrap)
+from .backend.memory import InMemoryCompilationDatabase
+from .models import (CompilationDatabaseInterface, ProbeError)
+from .utils import (suppress, re_fullmatch, empty_iterator_wrap)
 
+from .errors import (CompdbError, NotImplementedError)
 
-class ComplementerError(compdb.CompdbError):
+class ComplementerError(CompdbError):
     '''Base exception for complementer-related errors'''
 
     def __init__(self, complementer, message):

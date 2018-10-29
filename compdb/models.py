@@ -3,10 +3,9 @@ from __future__ import print_function, unicode_literals, absolute_import
 import os
 import pprint
 
-import compdb
+from .errors import (CompdbError, NotImplementedError)
 
-
-class ProbeError(LookupError, compdb.CompdbError):
+class ProbeError(LookupError, CompdbError):
     """Raised when probing a compilation database failed"""
 
     def __init__(self, message, cause=None):
@@ -63,7 +62,7 @@ class CompilationDatabaseInterface(object):
 
         Return an iterable of CompileCommand.
         """
-        raise compdb.NotImplementedError
+        raise NotImplementedError
 
     def get_all_files(self):
         """Return an iterable of path strings.
@@ -71,7 +70,7 @@ class CompilationDatabaseInterface(object):
         It is ok to return the same path multiple times
         unless all_files_unique() returns True.
         """
-        raise compdb.NotImplementedError
+        raise NotImplementedError
 
     def all_files_unique(self):
         """Whether or not get_all_files() returns unique paths.
@@ -83,4 +82,4 @@ class CompilationDatabaseInterface(object):
 
     def get_all_compile_commands(self):
         """Return an iterable of CompileCommand."""
-        raise compdb.NotImplementedError
+        raise NotImplementedError

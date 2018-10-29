@@ -2,7 +2,7 @@ from __future__ import print_function, unicode_literals, absolute_import
 
 import os
 
-from compdb.models import CompilationDatabaseInterface
+from ..models import CompilationDatabaseInterface
 
 
 class InMemoryCompilationDatabase(CompilationDatabaseInterface):

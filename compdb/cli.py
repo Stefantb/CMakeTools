@@ -5,13 +5,13 @@ import logging
 import os
 import sys
 
-import compdb.backend.json
-import compdb.includedb
-import compdb.utils as utils
+from .backend import json
+from . import includedb
+from . import utils as utils
 
-from compdb.__about__ import (__prog__, __version__)
-from compdb.backend.json import JSONCompileCommandSerializer
-from compdb.core import CompilationDatabase
+from .__about__ import (__prog__, __version__)
+from .backend.json import JSONCompileCommandSerializer
+from .core import CompilationDatabase
 
 
 class Config(object):

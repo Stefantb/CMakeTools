@@ -3,9 +3,9 @@ from __future__ import print_function, unicode_literals, absolute_import
 import os
 import re
 
-from compdb.backend.memory import InMemoryCompilationDatabase
-from compdb.complementer import ComplementerInterface
-from compdb.models import CompileCommand
+from ..backend.memory import InMemoryCompilationDatabase
+from ..complementer import ComplementerInterface
+from ..models import CompileCommand
 
 
 def sanitize_compile_options(compile_command):

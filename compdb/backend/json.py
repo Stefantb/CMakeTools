@@ -5,9 +5,9 @@ import os
 import re
 import shlex
 
-import compdb.utils
+from .. import utils
 
-from compdb.models import (CompileCommand, CompilationDatabaseInterface)
+from ..models import (CompileCommand, CompilationDatabaseInterface)
 
 
 class JSONCompilationDatabase(CompilationDatabaseInterface):
@@ -24,7 +24,7 @@ class JSONCompilationDatabase(CompilationDatabaseInterface):
         return super(JSONCompilationDatabase, cls).probe_directory(directory)
 
     def get_compile_commands(self, filepath):
-        filepath = compdb.utils.logical_abspath(filepath)
+        filepath = utils.logical_abspath(filepath)
         for elem in self._data:
             if os.path.normpath(os.path.join(elem['directory'],
                                              elem['file'])) == filepath:

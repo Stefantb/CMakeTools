@@ -4,7 +4,7 @@ import configparser
 import os
 import sys
 
-import compdb.utils
+from . import utils
 
 
 def _xdg_config_home():
@@ -58,7 +58,7 @@ def get_user_conf():
 
 
 def get_local_conf():
-    compdb_dir = compdb.utils.locate_dominating_file('.compdb')
+    compdb_dir = utils.locate_dominating_file('.compdb')
     if compdb_dir:
         return os.path.join(compdb_dir, '.compdb')
     return None
@@ -101,7 +101,7 @@ def parse_option_bool(value, *_):
 
 
 def parse_option_path(value, working_directory):
-    return compdb.utils.get_friendly_path(
+    return utils.get_friendly_path(
         os.path.join(working_directory, value))
 
 

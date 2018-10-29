@@ -6,10 +6,10 @@ import re
 
 from collections import deque
 
-import compdb.complementer.headerdb
-import compdb.utils
+from .complementer import headerdb
+from . import utils
 
-from compdb.models import CompilationDatabaseInterface
+from .models import CompilationDatabaseInterface
 
 try:
     FileNotFoundError
@@ -44,7 +44,7 @@ class Preprocessor(object):
         self.callbacks.append(cb)
 
     def preprocess(self, compile_command):
-        search_paths = compdb.complementer.headerdb.extract_include_dirs(
+        search_paths = headerdb.extract_include_dirs(
             compile_command)
         includer_stack = [compile_command.normfile]
         if includer_stack[0] in self._processed:
@@ -69,16 +69,16 @@ class Preprocessor(object):
             if not search_path:
                 if is_angled:
                     logger.debug("%s: could not resolve header: <%s>",
-                                 compdb.utils.get_friendly_path(includer),
+                                 utils.get_friendly_path(includer),
                                  header_name)
                 else:
                     logger.warning("%s: could not resolve header: \"%s\"",
-                                   compdb.utils.get_friendly_path(includer),
+                                   utils.get_friendly_path(includer),
                                    header_name)
                 continue
 
             logger.debug("%s: resolved header: %s%s%s",
-                         compdb.utils.get_friendly_path(includer), quote,
+                         utils.get_friendly_path(includer), quote,
                          header_name, is_angled and '>' or '"')
 
             if self.callbacks:
@@ -195,7 +195,7 @@ See also https://www.python.org/doc/essays/graphs/
             if includer not in self._db_index:
                 # this includer is also an include, skip it
                 continue
-            score = compdb.complementer.headerdb.score_other_file(
+            score = headerdb.score_other_file(
                 path, includer)
             if best_score is None or score > best_score:
                 best_score = score
@@ -206,7 +206,7 @@ See also https://www.python.org/doc/essays/graphs/
         best = self._find_best(path)
         if best:
             for compile_command in self.database.get_compile_commands(best):
-                yield compdb.complementer.headerdb.derive_compile_command(
+                yield headerdb.derive_compile_command(
                     path, compile_command)
                 # stop after one compile command
                 break

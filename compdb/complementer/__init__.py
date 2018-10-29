@@ -1,5 +1,4 @@
-import compdb
-
+from ..errors import NotImplementedError
 
 class ComplementerInterface(object):
     """Provides a method to compute a compilation datbase complement.
@@ -36,4 +35,4 @@ class ComplementerInterface(object):
         the opportunity to complement project A's database with the headers
         over project B which uses the headers "more indirectly".
         """
-        raise compdb.NotImplementedError
+        raise NotImplementedError
