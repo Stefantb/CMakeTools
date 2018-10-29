@@ -2,7 +2,7 @@ import imp
 
 import Default.exec
 
-import CMakeIDE.cmake_server as cmake_server
+from . import cmake_server
 imp.reload(cmake_server)
 
 

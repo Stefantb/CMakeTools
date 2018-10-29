@@ -1,38 +1,13 @@
 import imp
-import time
 
 import sublime
 import sublime_plugin
-import Default.exec
 
-import CMakeIDE.project_settings as ps
-import CMakeIDE.cmake_server as cmake_server
+from . import project_settings as ps
+from . import cmake_server
 
 imp.reload(ps)
 imp.reload(cmake_server)
-
-
-# *****************************************************************************
-#
-# *****************************************************************************
-class CmakeideExecCommand(Default.exec.ExecCommand):
-
-    def run(self, window_id, **kwargs):
-        window = sublime.Window(window_id)
-        self.server = cmake_server.get_cmake_server(window)
-        if not self.server:
-            sublime.error_message("Unable to locate server!")
-            return
-
-        if self.server.is_building:
-            print('Already building so we will wait')
-            return
-        self.server.is_building = True
-        super().run(**kwargs)
-
-    def on_finished(self, proc):
-        super().on_finished(proc)
-        self.server.is_building = False
 
 
 # *****************************************************************************

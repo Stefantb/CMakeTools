@@ -9,9 +9,9 @@ import sublime
 import Default.exec
 
 from . import compdb_api
-
 from .check_output import check_output
 from . import project_settings as ps
+
 imp.reload(ps)
 
 
