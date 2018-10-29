@@ -8,6 +8,8 @@ import imp
 import sublime
 import Default.exec
 
+from . import compdb_api
+
 from CMakeIDE.check_output import check_output
 import CMakeIDE.project_settings as ps
 imp.reload(ps)
@@ -129,27 +131,6 @@ def get_cmake_server(window, recreate=False):
 # *****************************************************************************
 #
 # *****************************************************************************
-def enhance_compilation_db_with_header_info(build_folder):
-    compile_commands_path = os.path.join(
-        build_folder,
-        "compile_commands.json")
-
-    db = JSONCompilationDatabase.probe_directory(build_folder)
-    headerdb = make_headerdb([[db]])[0]
-    db = list(db._data)
-    db.extend(headerdb.get_all_compile_commands())
-    with open(compile_commands_path, "w") as f:
-        json.dump(
-            db,
-            f,
-            check_circular=False,
-            indent=2,
-            cls=CompileCommand.JSONEncoder)
-
-
-# *****************************************************************************
-#
-# *****************************************************************************
 def handle_compdb(window):
     settings = ps.CmakeIDESettings(window)
     build_folder = settings.current_configuration.build_folder_expanded(window)
@@ -158,7 +139,10 @@ def handle_compdb(window):
     compile_commands_path = os.path.join(build_folder, "compile_commands.json")
 
     if settings.get_multilevel_setting("enhance_compile_commands_with_header_info", False):
-        enhance_compilation_db_with_header_info(build_folder)
+        try:
+            compdb_api.enhance_compdb_with_headers(build_folder)
+        except Exception as e:
+            print(e)
 
     #
     data = window.project_data()
