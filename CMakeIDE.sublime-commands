@@ -9,7 +9,7 @@
   },
   {
     "command": "cmakeide_configure",
-    "args":{"recreate": true},
+    "args": {"recreate": true},
     "caption": "CMakeIDE: Re-Configure"
   },
   {
@@ -20,5 +20,10 @@
     "command": "cmakeide_show_panel",
     "args":{"panel_id": "cmake.configure"},
     "caption": "CMakeIDE: Show Config Panel"
-  }
+  },
+  {
+    "command": "cmakeide_change_config_setting",
+    "caption": "CMakeIDE: Change CMake Generator",
+    "args": {"setting": "generator"},
+  },
 ]
