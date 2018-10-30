@@ -17,6 +17,10 @@ class Configuration():
         return self._data
 
     @property
+    def cmake_binary(self):
+        return self._data.get('cmake_binary', {})
+
+    @property
     def arguments(self):
         return self._data.get('arguments', {})
 
