@@ -1,0 +1,16 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: CMakeIDE Diagnosis
+hidden: true
+scope: text.diagnosis.CMakeIDE
+contexts:
+  main:
+    - match: '[═╒│╞╪╤╕╡┤┼─├╘╧╛]+'
+      scope: comment.diagnosis.CMakeIDE
+    - match: (CHECK|VALUE|SUGGESTION/FIX)
+      scope: comment.diagnosis.CMakeIDE
+    - match: \bTrue\b
+      scope: markup.inserted.latextools-system-check.available
+    - match: \b(NOT FOUND|False)\b
+      scope: keyword.control.latextools-system-check.available

@@ -308,7 +308,7 @@ class CmakeServer(Default.exec.ProcessListener):
         view.settings().set("result_base_dir",
                             self.cmake_configuration.source_folder_expanded(self.window))
         view.set_syntax_file(
-            "Packages/CMakeBuilder/Syntax/Configure.sublime-syntax")
+            "Packages/CMakeIDE/Syntax/Configure.sublime-syntax")
         window.run_command("show_panel", {"panel": "output.cmake.configure"})
 
         self._send_dict(
@@ -349,7 +349,7 @@ class CmakeServer(Default.exec.ProcessListener):
         elif t == "signal":
             self._receive_signal(thedict)
         else:
-            print('CMakeBuilder: Received unknown type "{}"'.format(t))
+            print('CMakeIDE: Received unknown type "{}"'.format(t))
             print(thedict)
 
     def _handle_reply(self, thedict):
@@ -373,7 +373,7 @@ class CmakeServer(Default.exec.ProcessListener):
         elif reply == "cache":
             self._handle_reply_cache(thedict)
         else:
-            print("CMakeBuilder: received unknown reply type:", reply)
+            print("CMakeIDE: received unknown reply type:", reply)
 
     def _handle_reply_handshake(self, thedict) -> None:
         self.window.status_message(
@@ -430,6 +430,7 @@ class CmakeServer(Default.exec.ProcessListener):
 
         self._targets = []
         configurations = codemodel_data.get('configurations')
+
         for configuration in configurations:
 
             projects = configuration.get('projects')
@@ -539,8 +540,10 @@ class CmakeServer(Default.exec.ProcessListener):
             name = "cmake." + thedict["inReplyTo"]
         view = window.find_output_panel(name)
         assert view
-        settings = sublime.load_settings("CMakeBuilder.sublime-settings")
-        if settings.get("server_configure_verbose", False):
+
+        # settings = sublime.load_settings("CMakeIDE.sublime-settings")
+        # if settings.get("server_configure_verbose", False):
+        if True:
             window.run_command("show_panel",
                                {"panel": "output.{}".format(name)})
         view.run_command("append", {
