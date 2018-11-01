@@ -5,10 +5,10 @@ import sublime
 import sublime_plugin
 
 from . import project_settings as ps
-from . import cmake_server
+from . import cmake_client
 
 imp.reload(ps)
-imp.reload(cmake_server)
+imp.reload(cmake_client)
 
 
 # Note: Things in "CMakeFiles" folders get removed anyway. This is where you put
@@ -108,5 +108,5 @@ class CmakeideClearCacheCommand(sublime_plugin.WindowCommand):
             self.window.show_quick_panel(['Do it', 'Cancel'], on_done,
                                          sublime.KEEP_OPEN_ON_FOCUS_LOST)
 
-            server = cmake_server.get_cmake_server(self.window)
-            server.is_configured = False
+            client = cmake_client.CMakeClient(self.window)
+

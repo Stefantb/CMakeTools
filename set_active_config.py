@@ -3,10 +3,10 @@ import imp
 import sublime_plugin
 
 from . import project_settings as ps
-from . import cmake_server
+from . import cmake_client
 
 imp.reload(ps)
-imp.reload(cmake_server)
+imp.reload(cmake_client)
 
 
 # *****************************************************************************
@@ -115,5 +115,5 @@ class CmakeideSetActiveConfigCommand(sublime_plugin.WindowCommand):
         print(curr.build_folder_expanded(self.window))
         settings.commit()
 
-        cmake_server.get_cmake_server(self.window, recreate=True)
-        cmake_server.configure()
+        cmake_client.CMakeClient(self.window, recreate=True)
+        cmake_client.configure()

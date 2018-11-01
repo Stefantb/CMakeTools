@@ -1,11 +1,10 @@
 import imp
 
-import sublime
 import Default.exec
 
-from . import cmake_server
+from . import build_tools
 
-imp.reload(cmake_server)
+imp.reload(build_tools)
 
 
 # *****************************************************************************
@@ -13,20 +12,18 @@ imp.reload(cmake_server)
 # *****************************************************************************
 class CmakeideExecCommand(Default.exec.ExecCommand):
 
-    def run(self, window_id, **kwargs):
-        self.server = cmake_server.get_cmake_server(sublime.Window(window_id))
+    def run(self, id=None, **kwargs):
 
-        if not self.server:
-            sublime.error_message("Unable to locate server!")
-            return
+        print('cmakeide_exec called with {}'.format(kwargs))
 
-        if self.server.is_building:
+        if build_tools.is_building():
             print('Already building so we will wait')
             return
 
-        self.server.is_building = True
+        build_tools.set_is_building(True)
         super().run(**kwargs)
 
     def on_finished(self, proc):
+        print('cmakeide_exec finished')
         super().on_finished(proc)
-        self.server.is_building = False
+        build_tools.set_is_building(False)

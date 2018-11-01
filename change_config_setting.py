@@ -2,7 +2,7 @@
 
 import sublime_plugin
 
-from . import cmake_server
+from . import cmake_client
 from . import project_settings as ps
 
 
@@ -10,7 +10,7 @@ from . import project_settings as ps
 #
 # *****************************************************************************
 def change_generator(settings, window):
-    caps = cmake_server.get_capabilities(settings.get_multilevel_setting('cmake_binary'))
+    caps = cmake_client.CMakeClient.get_capabilities(settings.get_multilevel_setting('cmake_binary'))
     generators = [generator.get('name') for generator in caps['generators']]
 
     def selected(id):

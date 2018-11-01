@@ -6,10 +6,10 @@ import sublime_plugin
 import Default.exec
 
 from . import project_settings as ps
-from . import cmake_server
+from . import cmake_client
 
 imp.reload(ps)
-imp.reload(cmake_server)
+imp.reload(cmake_client)
 
 
 # *****************************************************************************

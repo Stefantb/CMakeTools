@@ -4,10 +4,8 @@ import imp
 import sublime_plugin
 
 from . import project_settings as ps
-from . import cmake_server
 
 imp.reload(ps)
-imp.reload(cmake_server)
 
 
 # *****************************************************************************
