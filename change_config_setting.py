@@ -4,6 +4,13 @@ import sublime_plugin
 
 from . import cmake_client
 from . import project_settings as ps
+from . import logging
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
+logger = logging.get_logger(__name__)
 
 
 # *****************************************************************************
@@ -14,7 +21,7 @@ def change_generator(settings, window):
     generators = [generator.get('name') for generator in caps['generators']]
 
     def selected(id):
-        print(generators[id])
+        logger.info(generators[id])
         settings.current_configuration.generator = generators[id]
         settings.commit()
 

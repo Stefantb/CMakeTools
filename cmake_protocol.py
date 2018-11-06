@@ -7,18 +7,14 @@ import sublime
 import Default.exec
 
 from . import build_tools
+from . import logging
+
 
 # *****************************************************************************
 #
 # *****************************************************************************
-def echo(fn):
-    from itertools import chain
-
-    def wrapped(*v, **k):
-        name = fn.__name__
-        print("{}({})".format(name, ", ".join(map(repr, chain(v, k.values())))))
-        return fn(*v, **k)
-    return wrapped
+imp.reload(logging)
+logger = logging.get_logger(__name__)
 
 
 # *****************************************************************************
@@ -89,6 +85,41 @@ class CMakeTarget:
 # *****************************************************************************
 #
 # *****************************************************************************
+class OutputPanel:
+
+    def __init__(self, window, source_folder):
+        self.window = window
+
+        self.name = "cmake.configure"
+
+        self.view = window.create_output_panel(self.name, True)
+        self.view.settings().set("result_file_regex", r'CMake\s(?:Error|Warning)'
+                            r'(?:\s\(dev\))?\sat\s(.+):(\d+)()\s?\(?(\w*)\)?:')
+
+        self.view.set_syntax_file(
+            "Packages/CMakeIDE/Syntax/Configure.sublime-syntax")
+
+        self.view.settings().set("result_base_dir", source_folder)
+
+
+    def show(self):
+        self.window.run_command("show_panel", {"panel": "output.cmake.configure"})
+
+    def append(self, message):
+
+        self.window.run_command("show_panel",
+                                {"panel": "output.{}".format(self.name)})
+
+        self.view.run_command("append", {
+            "characters": message + "\n",
+            "force": True,
+            "scroll_to_end": True
+        })
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
 class CMakeProtocolHandler(Default.exec.ProcessListener):
 
     _BEGIN_TOKEN = '[== "CMake Server" ==['
@@ -109,8 +140,10 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         self.data_parts = ''
         self.inside_json_object = False
 
-        print('CMakeProtocolHandler initialized with {}'.format(cmake_configuration))
-        # self._start_connection()
+        self.config_output = OutputPanel(self.window, cmake_configuration.source_folder)
+
+        logger.info('CMakeProtocolHandler initialized with {}'.format(cmake_configuration))
+
 
     # *****************************************************************************
     #   Public API
@@ -119,21 +152,20 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         cmd = [self.cmake_binary_path, "-E",
                "server", "--experimental", "--debug"]
 
-        print('Starting server with: {}'.format(cmd))
+        logger.info('Starting server with: {}'.format(cmd))
+
+        self.config_output.append('=' * 80)
+        self.config_output.append(' '.join(cmd))
+
         self.proc = Default.exec.AsyncProcess(
             cmd=cmd, shell_cmd=None, listener=self, env={})
 
-    # maintained by CmakeBuildCommand
-    @property
-    def is_building(self):
-        return build_tools.is_building()
-
     def configure(self):
         if not self.is_ready:
-            print('server not ready to take commands')
+            logger.info('server not ready to take commands')
             return
-        if self.is_working or self.is_building:
-            print('server already working')
+        if self.is_working:
+            logger.info('server already working')
             return
         self._configure()
 
@@ -153,6 +185,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
     #
     # *****************************************************************************
     def __del__(self):
+        logger.info('CMakeProtocolHandler.__del__()')
         if self.proc:
             self.proc.kill()
 
@@ -205,10 +238,10 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
     # *****************************************************************************
     #  Send
     # *****************************************************************************
-    @echo
+    @logging.log_method_call(logger)
     def _send_text(self, json_data):
         while not hasattr(self, "proc"):
-            print('terrible hack :(')
+            logger.info('terrible hack :(')
             time.sleep(0.01)
         self.proc.proc.stdin.write(json_data)
         self.proc.proc.stdin.flush()
@@ -237,18 +270,20 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
     def _configure(self):
         self.is_working = True
         self.bad_configure = False
-        self.create_configure_output_panel()
 
         def get_configure_arguments(cmake_configuration):
-            ovr = []
+            formatted = []
             for key, value in cmake_configuration.arguments.items():
                 if type(value) is bool:
                     value = "ON" if value else "OFF"
-                ovr.append("-D{}={}".format(key, value))
-            return ovr
+                formatted.append("-D{}={}".format(key, value))
+            return formatted
 
+        args = get_configure_arguments(self.cmake_configuration)
+
+        self.config_output.append('cacheArguments:\n{}\n'.format('\n'.join(args)))
         self._send_dict(
-            {"type": "configure", "cacheArguments": get_configure_arguments(self.cmake_configuration)})
+            {"type": "configure", "cacheArguments": args})
 
     def _compute(self):
         self.is_working = True
@@ -280,7 +315,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         data = json.loads(json_data)
         self._process_data(data)
 
-    @echo
+    @logging.log_method_call(logger)
     def _process_data(self, data):
         t = data.pop("type")
         if t == "hello":
@@ -296,8 +331,8 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         elif t == "signal":
             self._receive_signal(data)
         else:
-            print('CMakeIDE: Received unknown type "{}"'.format(t))
-            print(data)
+            logger.info('CMakeIDE: Received unknown type "{}"'.format(t))
+            logger.info(data)
 
     def _receive_hello(self, data):
         self._handshake()
@@ -323,7 +358,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         elif reply == "cache":
             self._handle_reply_cache(data)
         else:
-            print("CMakeIDE: received unknown reply type:", reply)
+            logger.info("CMakeIDE: received unknown reply type:", reply)
 
     def _receive_error(self, data):
         in_reply_to = data["inReplyTo"]
@@ -368,30 +403,18 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         message = data["message"]
 
         if in_reply_to in ("configure", "compute"):
-            panel_name = "cmake.configure"
-        else:
-            panel_name = "cmake." + in_reply_to
-        view = self.window.find_output_panel(panel_name)
-        assert view
-
-        # settings = sublime.load_settings("CMakeIDE.sublime-settings")
-        # if settings.get("server_configure_verbose", False):
-        self.window.run_command("show_panel",
-                                {"panel": "output.{}".format(panel_name)})
-
-        view.run_command("append", {
-            "characters": data["message"] + "\n",
-            "force": True,
-            "scroll_to_end": True
-        })
+            output = self.config_output
+            output.show()
+            output.append(data["message"])
 
     def _receive_signal(self, data):
         signal_name = data["name"]
-        print("received signal")
-        print(data)
+        logger.info("received signal")
+        logger.info(data)
 
-        if (signal_name == "dirty" and not self.is_working and not self.is_building):
-            self.configure()
+        if (signal_name == "dirty" and not self.is_working):
+            pass
+            # self.configure()
 
     # *****************************************************************************
     # Handle replies
@@ -520,13 +543,4 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         view.set_read_only(True)
         view.set_syntax_file("Packages/JavaScript/JSON.sublime-syntax")
 
-    def create_configure_output_panel(self):
-        window = self.window
-        view = window.create_output_panel("cmake.configure", True)
-        view.settings().set("result_file_regex", r'CMake\s(?:Error|Warning)'
-                            r'(?:\s\(dev\))?\sat\s(.+):(\d+)()\s?\(?(\w*)\)?:')
-        view.settings().set("result_base_dir",
-                            self.cmake_configuration.source_folder)
-        view.set_syntax_file(
-            "Packages/CMakeIDE/Syntax/Configure.sublime-syntax")
-        window.run_command("show_panel", {"panel": "output.cmake.configure"})
+

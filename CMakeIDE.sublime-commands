@@ -9,7 +9,7 @@
   },
   {
     "command": "cmakeide_configure",
-    "args": {"recreate": true},
+    "args": {"reconfigure": true},
     "caption": "CMakeIDE: Re-Configure"
   },
   {

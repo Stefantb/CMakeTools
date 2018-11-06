@@ -4,9 +4,17 @@ import sublime_plugin
 
 from . import project_settings as ps
 from . import cmake_client
+from . import logging
 
 imp.reload(ps)
 imp.reload(cmake_client)
+imp.reload(logging)
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
+logger = logging.get_logger(__name__)
 
 
 # *****************************************************************************
@@ -40,7 +48,7 @@ class NewConfigNameHandler(sublime_plugin.TextInputHandler):
         self.settings.configurations += [ps.Configuration(data=newitem)]
         self.settings.commit()
 
-        print('confirm {}'.format(text))
+        logger.info('confirm {}'.format(text))
         return True
 
     def preview(self, text):
@@ -50,7 +58,7 @@ class NewConfigNameHandler(sublime_plugin.TextInputHandler):
             return '{} exists already !'.format(text)
 
     def next_input(self, args):
-        print('next_input {}'.format(args))
+        logger.info('next_input {}'.format(args))
 
     def name(self):
         return 'new_config_name'
@@ -76,7 +84,7 @@ class ActiveConfigHandler(sublime_plugin.ListInputHandler):
             return 'Set {} as the active config'.format(value)
 
     def next_input(self, args):
-        print('next_input {} for {}'.format(args, self.name()))
+        logger.info('next_input {} for {}'.format(args, self.name()))
         if args[self.name()] == 'Create New':
             return NewConfigNameHandler(self.settings)
         return None
@@ -94,25 +102,25 @@ class CmakeideSetActiveConfigCommand(sublime_plugin.WindowCommand):
         super(CmakeideSetActiveConfigCommand, self).__init__(text)
 
     def input(self, *args):
-        print(args)
+        logger.info(args)
         settings = ps.CmakeIDESettings(self.window)
         return ActiveConfigHandler(settings)
 
     def run(self, *args, active_config=None, new_config_name=None, **kwargs):
         if not active_config:
-            print('Gather input by other means')
+            logger.info('Gather input by other means')
             return
 
         if active_config == 'Create New':
             active_config = new_config_name
 
-        print('Ok then {}'.format(active_config))
+        logger.info('Ok then {}'.format(active_config))
 
         settings = ps.CmakeIDESettings(self.window)
         settings.current_configuration_name = active_config
 
         curr = settings.current_configuration
-        print(curr.build_folder_expanded(self.window))
+        logger.info(curr.build_folder_expanded(self.window))
         settings.commit()
 
         cmake_client.CMakeClient(self.window, recreate=True)

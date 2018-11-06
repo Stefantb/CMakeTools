@@ -1,4 +1,15 @@
+import imp
+
 import sublime
+
+from . import logging
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
+imp.reload(logging)
+logger = logging.get_logger(__name__)
 
 
 # *****************************************************************************
@@ -144,27 +155,27 @@ class CmakeIDESettings():
         return self._data.get('cmake_binary', '')
 
     def get_multilevel_setting(self, key, default=None):
-        print('Getting multilevel setting for key: {}'.format(key))
+        logger.info('Getting multilevel setting for key: {}'.format(key))
         # try geting it from the current config
         value = getattr(self.current_configuration, key, None)
         if value:
-            print('Found in projects current config: {}'.format(value))
+            logger.info('Found in projects current config: {}'.format(value))
             return value
 
         # try getting it from global project settings
-        print('Not found in current configuration')
+        logger.info('Not found in current configuration')
         value = getattr(self, key, None)
         if value:
-            print('Found in global project: {}'.format(value))
+            logger.info('Found in global project: {}'.format(value))
             return value
 
         # try getting it from global settings
-        print('Not found in global project settings')
+        logger.info('Not found in global project settings')
         settings = sublime.load_settings("CMakeIDE.sublime-settings")
         value = settings.get(key, None)
         if value:
-            print('Found in global settings: {}'.format(value))
+            logger.info('Found in global settings: {}'.format(value))
             return value
         else:
-            print('Gave up returning default: {}'.format(default))
+            logger.info('Gave up returning default: {}'.format(default))
             return default

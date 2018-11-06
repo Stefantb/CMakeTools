@@ -4,9 +4,17 @@ import sublime_plugin
 
 from . import project_settings as ps
 from . import build_tools
+from . import logging
 
 imp.reload(ps)
 imp.reload(build_tools)
+imp.reload(logging)
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
+logger = logging.get_logger(__name__)
 
 
 # *****************************************************************************
@@ -15,7 +23,7 @@ imp.reload(build_tools)
 class CmakeideBuildCommand(sublime_plugin.WindowCommand):
 
     def run(self, *args, **kwargs):
-        print('build called with {} {}'.format(args, kwargs))
+        logger.info('build called with {} {}'.format(args, kwargs))
 
         settings = ps.CmakeIDESettings(self.window)
 
@@ -40,11 +48,11 @@ class CmakeideBuildCommand(sublime_plugin.WindowCommand):
                     "cmakeide_exec", target
                 )
             else:
-                print('build target {} not found'.format(build_target_id))
+                logger.info('build target {} not found'.format(build_target_id))
 
     def on_new_build_target_selected(self, index):
         selected_target = self.current_target_selection[index]
-        print('build target {} selected'.format(selected_target))
+        logger.info('build target {} selected'.format(selected_target))
 
         settings = ps.CmakeIDESettings(self.window)
         current = settings.current_configuration
@@ -54,5 +62,5 @@ class CmakeideBuildCommand(sublime_plugin.WindowCommand):
             self.window.run_command(
                 "cmakeide_build", {"build_target_id": selected_target})
 
-            print(settings.current_configuration.build_target)
+            logger.info(settings.current_configuration.build_target)
             settings.commit()

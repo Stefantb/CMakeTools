@@ -108,5 +108,3 @@ class CmakeideClearCacheCommand(sublime_plugin.WindowCommand):
             self.window.show_quick_panel(['Do it', 'Cancel'], on_done,
                                          sublime.KEEP_OPEN_ON_FOCUS_LOST)
 
-            client = cmake_client.CMakeClient(self.window)
-

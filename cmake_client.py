@@ -2,6 +2,7 @@ import json
 import os
 import shutil
 import imp
+import copy
 
 import sublime
 
@@ -10,8 +11,18 @@ from . import project_settings as ps
 from . import build_tools
 from .check_output import check_output
 from . import cmake_protocol as protocol
+from . import logging
+
 imp.reload(ps)
 imp.reload(build_tools)
+imp.reload(logging)
+imp.reload(protocol)
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
+logger = logging.get_logger(__name__)
 
 
 # *****************************************************************************
@@ -28,7 +39,7 @@ def on_config_complete(window):
         try:
             compdb_api.enhance_compdb_with_headers(build_folder)
         except Exception as e:
-            print(e)
+            logger.info(e)
 
     #
     data = window.project_data()
@@ -66,7 +77,7 @@ class CMakeClient:
         try:
             command = "{cmake_binary} -E capabilities".format(
                 cmake_binary=cmake_binary)
-            print("running", command)
+            logger.info("running", command)
             output = check_output(command)
             return json.loads(output)
 
@@ -76,7 +87,7 @@ class CMakeClient:
                                   "set to \"{}\". Please make sure that this "
                                   "points to a valid cmake executable."
                                   .format(cmake_binary))
-            print(str(e))
+            logger.info(str(e))
             return {"error": None}
 
     @classmethod
@@ -86,7 +97,7 @@ class CMakeClient:
 
         handler = cls._handlers.get(window.id(), None)
         if handler is None:
-            print('Instantiating new handler for window {}'.format(window.id()))
+            logger.info('Instantiating new handler for window {}'.format(window.id()))
             settings = ps.CmakeIDESettings(window)
             cmake_binary = settings.get_multilevel_setting('cmake_binary')
 
@@ -96,17 +107,27 @@ class CMakeClient:
                 window)
             generator = settings.current_configuration.generator
 
+            arguments = settings.current_configuration.arguments
+            cfgstr = settings.current_configuration.configuration
+
+            for item in ['Debug', 'Release', 'RelWithDebInfo', 'MinSizeRel']:
+                if item.lower() == cfgstr.lower():
+                    if arguments.get('CMAKE_BUILD_TYPE', False):
+                        logger.warn('CMAKE_BUILD_TYPE gets overriden according to the configuration setting')
+                    arguments['CMAKE_BUILD_TYPE'] = item
+                    break
+
             configuration = protocol.CMakeConfiguration(cmake_binary=cmake_binary,
                                                         source_folder=source_directory,
                                                         build_folder=build_directory,
                                                         generator=generator,
-                                                        arguments=settings.current_configuration.arguments
+                                                        arguments=arguments
                                                         )
 
             handler = protocol.CMakeProtocolHandler(window, configuration)
             cls._handlers[window.id()] = handler
         else:
-            print('handler found for window {}'.format(window.id()))
+            logger.info('handler found for window {}'.format(window.id()))
 
         return handler
 

@@ -1,7 +1,4 @@
-from __future__ import print_function, unicode_literals, absolute_import
-
 import argparse
-import logging
 import os
 import sys
 import shutil
@@ -13,6 +10,13 @@ from .compdb import utils
 from .compdb.__about__ import (__prog__, __version__)
 from .compdb.backend.json import JSONCompileCommandSerializer
 from .compdb.core import CompilationDatabase
+from . import logging
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
+logger = logging.get_logger(__name__)
 
 
 # *****************************************************************************
@@ -93,7 +97,7 @@ class ListCommand():
                     has_compile_command = True
 
                 if file and not has_compile_command:
-                    print(
+                    logger.error(
                         'error: {}: no such entry'.format(file),
                         file=sys.stderr)
                     has_missing_files = True
@@ -112,7 +116,7 @@ class ListCommand():
             else:
                 database.add_directory(config.compdb_dir)
         except models.ProbeError as e:
-            print(
+            logger.error(
                 "{} {}: error: invalid database(s): {}".format(
                     __prog__, self.name, e),
                 file=sys.stderr)

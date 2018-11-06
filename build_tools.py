@@ -1,7 +1,17 @@
 import os
 import json
+import imp
 
 import sublime
+
+from . import logging
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
+imp.reload(logging)
+logger = logging.get_logger(__name__)
 
 
 # *****************************************************************************
@@ -45,7 +55,7 @@ def get_syntax_and_regex(generator):
         elif "Ninja" in generator:
             syntax = "Packages/CMakeIDE/Syntax/Ninja.sublime-syntax"
         else:
-            print("CMakeIDE: Warning: Generator", generator,
+            logger.info("CMakeIDE: Warning: Generator", generator,
                   "will not have syntax highlighting in the output panel.")
 
     elif sublime.platform() == "windows":
@@ -61,7 +71,7 @@ def get_syntax_and_regex(generator):
             file_regex = r'^(.+)\((\d+)\):() (.+)$'
             syntax = "Packages/CMakeIDE/Syntax/Make.sublime-syntax"
         else:
-            print("CMakeIDE: Warning: Generator", generator,
+            logger.info("CMakeIDE: Warning: Generator", generator,
                   "will not have syntax highlighting in the output panel.")
 
     return (syntax, file_regex)
@@ -116,7 +126,7 @@ def create_build_targets(cmake_targets, cmake_settings):
         'working_dir': cmake_settings.build_folder
     })
 
-    print(build_targets)
+    logger.info(build_targets)
 
     build_target_cache = build_target_cache_path(cmake_settings.build_folder)
 
