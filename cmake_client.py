@@ -28,7 +28,7 @@ logger = logging.get_logger(__name__)
 # *****************************************************************************
 #
 # *****************************************************************************
-def on_config_complete(window):
+def handle_compilation_database(window):
     settings = ps.CmakeIDESettings(window)
     build_folder = settings.current_configuration.build_folder_expanded(window)
     source_folder = settings.current_configuration.source_folder_expanded(
@@ -52,8 +52,9 @@ def on_config_complete(window):
     window.set_project_data(data)
 
     #
-    if settings.get_multilevel_setting("copy_compile_commands_to_project_path", False):
-        destination = os.path.join(source_folder, "compile_commands.json")
+    copy_to_path = settings.get_multilevel_setting("copy_compile_commands_dir", '', expand=True)
+    if copy_to_path:
+        destination = os.path.join(copy_to_path, "compile_commands.json")
         shutil.copyfile(compile_commands_path, destination)
 
 
@@ -138,4 +139,4 @@ class CMakeClient:
 
         build_tools.create_build_targets(cmake_targets, config)
 
-        on_config_complete(self.window)
+        handle_compilation_database(self.window)

@@ -101,7 +101,6 @@ class OutputPanel:
 
         self.view.settings().set("result_base_dir", source_folder)
 
-
     def show(self):
         self.window.run_command("show_panel", {"panel": "output.cmake.configure"})
 
@@ -542,5 +541,3 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         })
         view.set_read_only(True)
         view.set_syntax_file("Packages/JavaScript/JSON.sublime-syntax")
-
-

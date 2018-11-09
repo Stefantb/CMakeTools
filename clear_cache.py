@@ -65,6 +65,41 @@ def remove(files_to_remove, dirs_to_remove):
 # *****************************************************************************
 #
 # *****************************************************************************
+def clear_cache(window, with_confirmation=False):
+    settings = ps.CmakeIDESettings(window)
+    build_folder = settings.current_configuration.build_folder_expanded(
+        window)
+
+    files_to_remove, dirs_to_remove = find_removals(build_folder)
+
+    if not with_confirmation:
+        remove(files_to_remove, dirs_to_remove)
+    else:
+        panel = window.create_output_panel('files_to_be_deleted')
+
+        window.run_command('show_panel',
+                                {'panel': 'output.files_to_be_deleted'})
+
+        panel.run_command('insert', {
+            'characters': 'Files to remove:\n' +
+            '\n'.join(files_to_remove + dirs_to_remove)
+        })
+
+        def on_done(selected):
+            if selected != 0:
+                return
+            remove(files_to_remove, dirs_to_remove)
+            panel.run_command('append',
+                              {'characters': '\nCleared CMake cache files!',
+                               'scroll_to_end': True})
+
+        window.show_quick_panel(['Do it', 'Cancel'], on_done,
+                                sublime.KEEP_OPEN_ON_FOCUS_LOST)
+
+
+# *****************************************************************************
+#
+# *****************************************************************************
 class CmakeideClearCacheCommand(sublime_plugin.WindowCommand):
     """Clears the CMake-generated files"""
 
@@ -78,33 +113,4 @@ class CmakeideClearCacheCommand(sublime_plugin.WindowCommand):
         return 'Clear Cache'
 
     def run(self, with_confirmation=True):
-        settings = ps.CmakeIDESettings(self.window)
-        build_folder = settings.current_configuration.build_folder_expanded(
-            self.window)
-
-        files_to_remove, dirs_to_remove = find_removals(build_folder)
-
-        if not with_confirmation:
-            remove(files_to_remove, dirs_to_remove)
-        else:
-            panel = self.window.create_output_panel('files_to_be_deleted')
-
-            self.window.run_command('show_panel',
-                                    {'panel': 'output.files_to_be_deleted'})
-
-            panel.run_command('insert', {
-                'characters': 'Files to remove:\n' +
-                '\n'.join(files_to_remove + dirs_to_remove)
-            })
-
-            def on_done(selected):
-                if selected != 0:
-                    return
-                remove(files_to_remove, dirs_to_remove)
-                panel.run_command('append',
-                                  {'characters': '\nCleared CMake cache files!',
-                                   'scroll_to_end': True})
-
-            self.window.show_quick_panel(['Do it', 'Cancel'], on_done,
-                                         sublime.KEEP_OPEN_ON_FOCUS_LOST)
-
+        clear_cache(self.window, with_confirmation)

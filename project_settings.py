@@ -154,28 +154,36 @@ class CmakeIDESettings():
         """a"""
         return self._data.get('cmake_binary', '')
 
-    def get_multilevel_setting(self, key, default=None):
+    def get_multilevel_setting(self, key, default=None, expand=False):
         logger.info('Getting multilevel setting for key: {}'.format(key))
+
+        retval = None
+
         # try geting it from the current config
-        value = getattr(self.current_configuration, key, None)
-        if value:
-            logger.info('Found in projects current config: {}'.format(value))
-            return value
+        retval = getattr(self.current_configuration, key, None)
+        if retval:
+            logger.info('Found in projects current config: {}'.format(retval))
 
         # try getting it from global project settings
         logger.info('Not found in current configuration')
-        value = getattr(self, key, None)
-        if value:
-            logger.info('Found in global project: {}'.format(value))
-            return value
+        retval = getattr(self, key, None)
+        if retval:
+            logger.info('Found in global project: {}'.format(retval))
 
         # try getting it from global settings
         logger.info('Not found in global project settings')
         settings = sublime.load_settings("CMakeIDE.sublime-settings")
-        value = settings.get(key, None)
-        if value:
-            logger.info('Found in global settings: {}'.format(value))
-            return value
+        retval = settings.get(key, None)
+        if retval:
+            logger.info('Found in global settings: {}'.format(retval))
         else:
             logger.info('Gave up returning default: {}'.format(default))
-            return default
+            retval = default
+
+        #
+        if expand:
+            variables = self.window.extract_variables()
+            retval = sublime.expand_variables(retval, variables)
+            logger.info('Expanded to: {}'.format(retval))
+
+        return retval
