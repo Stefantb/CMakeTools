@@ -2,6 +2,7 @@ import json
 import time
 import imp
 import itertools
+import os
 
 import sublime
 import Default.exec
@@ -441,6 +442,9 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         cmake_targets = []
 
         configurations = codemodel_data.get('configurations')
+
+        self.save_codemodel_to_file(configurations)
+
         for configuration in configurations:
 
             projects = configuration.get('projects')
@@ -541,3 +545,8 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         })
         view.set_read_only(True)
         view.set_syntax_file("Packages/JavaScript/JSON.sublime-syntax")
+
+    def save_codemodel_to_file(self, configurations):
+        output_path = os.path.join(self.cmake_configuration.build_folder, 'codemodel.json')
+        with open(output_path, 'w') as f:
+            f.write(json.dumps(configurations, indent=4))
