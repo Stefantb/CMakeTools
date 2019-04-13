@@ -36,7 +36,7 @@ def set_is_building(value):
 def build_target_cache_path(build_folder):
     return os.path.join(build_folder,
                         "CMakeFiles",
-                        'cmake_ide_build_targets.json')
+                        'cmake_tools_build_targets.json')
 
 
 # *****************************************************************************
@@ -51,27 +51,27 @@ def get_syntax_and_regex(generator):
         file_regex = r'(.+[^:]):(\d+):(\d+): (?:fatal )?((?:error|warning): .+)$'
 
         if "Makefile" in generator:
-            syntax = "Packages/CMakeIDE/Syntax/Make.sublime-syntax"
+            syntax = "Packages/CMakeTools/Syntax/Make.sublime-syntax"
         elif "Ninja" in generator:
-            syntax = "Packages/CMakeIDE/Syntax/Ninja.sublime-syntax"
+            syntax = "Packages/CMakeTools/Syntax/Ninja.sublime-syntax"
         else:
-            logger.info("CMakeIDE: Warning: Generator", generator,
+            logger.info("CMakeTools: Warning: Generator", generator,
                   "will not have syntax highlighting in the output panel.")
 
     elif sublime.platform() == "windows":
 
         if "Ninja" in generator:
             file_regex = r'^(.+)\((\d+)\):() (.+)$'
-            syntax = "Packages/CMakeIDE/Syntax/Ninja+CL.sublime-syntax"
+            syntax = "Packages/CMakeTools/Syntax/Ninja+CL.sublime-syntax"
         elif "Visual Studio" in generator:
             file_regex = (
                 r'^  (.+)\((\d+)\)(): ((?:fatal )?(?:error|warning) ', r'\w+\d\d\d\d: .*) \[.*$')
-            syntax = "Packages/CMakeIDE/Syntax/Visual_Studio.sublime-syntax"
+            syntax = "Packages/CMakeTools/Syntax/Visual_Studio.sublime-syntax"
         elif "NMake" in generator:
             file_regex = r'^(.+)\((\d+)\):() (.+)$'
-            syntax = "Packages/CMakeIDE/Syntax/Make.sublime-syntax"
+            syntax = "Packages/CMakeTools/Syntax/Make.sublime-syntax"
         else:
-            logger.info("CMakeIDE: Warning: Generator", generator,
+            logger.info("CMakeTools: Warning: Generator", generator,
                   "will not have syntax highlighting in the output panel.")
 
     return (syntax, file_regex)

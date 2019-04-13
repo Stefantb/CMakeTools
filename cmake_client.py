@@ -29,10 +29,9 @@ logger = logging.get_logger(__name__)
 #
 # *****************************************************************************
 def handle_compilation_database(window):
-    settings = ps.CmakeIDESettings(window)
+    settings = ps.Settings(window)
     build_folder = settings.current_configuration.build_folder_expanded(window)
-    source_folder = settings.current_configuration.source_folder_expanded(
-        window)
+
     compile_commands_path = os.path.join(build_folder, "compile_commands.json")
 
     if settings.get_multilevel_setting("enhance_compile_commands_with_header_info", False):
@@ -99,7 +98,7 @@ class CMakeClient:
         handler = cls._handlers.get(window.id(), None)
         if handler is None:
             logger.info('Instantiating new handler for window {}'.format(window.id()))
-            settings = ps.CmakeIDESettings(window)
+            settings = ps.Settings(window)
             cmake_binary = settings.get_multilevel_setting('cmake_binary')
 
             source_directory = settings.current_configuration.source_folder_expanded(

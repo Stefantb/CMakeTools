@@ -1,0 +1,34 @@
+[
+  {
+    "command": "cmaketools_set_active_config",
+    "caption": "CMakeTools: Set Active Config"
+  },
+  {
+    "command": "cmaketools_configure",
+    "caption": "CMakeTools: Configure"
+  },
+  {
+    "command": "cmaketools_configure",
+    "args": {"reconfigure": true},
+    "caption": "CMakeTools: Re-Configure"
+  },
+  {
+    "command": "cmaketools_clear_cache",
+    "caption": "CMakeTools: Clear Cache"
+  },
+  {
+    "command": "cmaketools_show_panel",
+    "args":{"panel_id": "cmake.configure"},
+    "caption": "CMakeTools: Show Config Panel"
+  },
+  {
+    "command": "cmaketools_change_config_setting",
+    "args": {"setting": "generator"},
+    "caption": "CMakeTools: Change CMake Generator",
+  },
+  {
+    "command": "cmaketools_build",
+    "args":{"choose_target": true},
+    "caption": "CMakeTools: Set Build Target",
+  },
+]

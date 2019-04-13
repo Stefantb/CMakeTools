@@ -66,7 +66,7 @@ def remove(files_to_remove, dirs_to_remove):
 #
 # *****************************************************************************
 def clear_cache(window, with_confirmation=False):
-    settings = ps.CmakeIDESettings(window)
+    settings = ps.Settings(window)
     build_folder = settings.current_configuration.build_folder_expanded(
         window)
 
@@ -100,11 +100,11 @@ def clear_cache(window, with_confirmation=False):
 # *****************************************************************************
 #
 # *****************************************************************************
-class CmakeideClearCacheCommand(sublime_plugin.WindowCommand):
+class CmaketoolsClearCacheCommand(sublime_plugin.WindowCommand):
     """Clears the CMake-generated files"""
 
     def is_enabled(self):
-        if ps.CmakeIDESettings(self.window).current_configuration:
+        if ps.Settings(self.window).current_configuration:
             return True
         return False
 

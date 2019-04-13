@@ -15,7 +15,7 @@ logger = logging.get_logger(__name__)
 # *****************************************************************************
 #
 # *****************************************************************************
-class CmakeideShowPanelCommand(sublime_plugin.WindowCommand):
+class CmaketoolsShowPanelCommand(sublime_plugin.WindowCommand):
 
     def run(self, *, panel_id, **kwargs):
         logger.info('show: {}'.format(panel_id))

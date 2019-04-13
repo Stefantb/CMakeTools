@@ -1,15 +1,15 @@
 %YAML 1.2
 ---
 # http://www.sublimetext.com/docs/3/syntax.html
-name: CMakeIDE Diagnosis
+name: CMakeTools Diagnosis
 hidden: true
-scope: text.diagnosis.CMakeIDE
+scope: text.diagnosis.CMakeTools
 contexts:
   main:
     - match: '[═╒│╞╪╤╕╡┤┼─├╘╧╛]+'
-      scope: comment.diagnosis.CMakeIDE
+      scope: comment.diagnosis.CMakeTools
     - match: (CHECK|VALUE|SUGGESTION/FIX)
-      scope: comment.diagnosis.CMakeIDE
+      scope: comment.diagnosis.CMakeTools
     - match: \bTrue\b
       scope: markup.inserted.latextools-system-check.available
     - match: \b(NOT FOUND|False)\b

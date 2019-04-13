@@ -21,7 +21,7 @@ class FileWatcher(sublime_plugin.EventListener):
 
     def on_post_save(self, view):
 
-        if ps.CmakeIDESettings(view.window()).is_cmake_project:
+        if ps.Settings(view.window()).is_cmake_project:
             name = view.file_name()
 
             logger.info('post save: {}'.format(name))
@@ -31,4 +31,4 @@ class FileWatcher(sublime_plugin.EventListener):
                     name.endswith(".cmake") or \
                     name.endswith(".sublime-project"):
 
-                view.window().run_command("cmakeide_configure", {"reconfigure": "true"})
+                view.window().run_command("cmaketools_configure", {"reconfigure": "true"})

@@ -31,14 +31,14 @@ def change_generator(settings, window):
 # *****************************************************************************
 #
 # *****************************************************************************
-class CmakeideChangeConfigSettingCommand(sublime_plugin.WindowCommand):
+class CmaketoolsChangeConfigSettingCommand(sublime_plugin.WindowCommand):
 
     def run(self, *args, setting=None, **kwargs):
 
         if setting is None:
             return
 
-        settings = ps.CmakeIDESettings(self.window)
+        settings = ps.Settings(self.window)
 
         if setting == 'generator':
             change_generator(settings, self.window)

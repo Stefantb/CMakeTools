@@ -98,7 +98,7 @@ class OutputPanel:
                             r'(?:\s\(dev\))?\sat\s(.+):(\d+)()\s?\(?(\w*)\)?:')
 
         self.view.set_syntax_file(
-            "Packages/CMakeIDE/Syntax/Configure.sublime-syntax")
+            "Packages/CMakeTools/Syntax/Configure.sublime-syntax")
 
         self.view.settings().set("result_base_dir", source_folder)
 
@@ -331,7 +331,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         elif t == "signal":
             self._receive_signal(data)
         else:
-            logger.info('CMakeIDE: Received unknown type "{}"'.format(t))
+            logger.info('CMakeTools: Received unknown type "{}"'.format(t))
             logger.info(data)
 
     def _receive_hello(self, data):
@@ -358,7 +358,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         elif reply == "cache":
             self._handle_reply_cache(data)
         else:
-            logger.info("CMakeIDE: received unknown reply type:", reply)
+            logger.info("CMakeTools: received unknown reply type:", reply)
 
     def _receive_error(self, data):
         in_reply_to = data["inReplyTo"]

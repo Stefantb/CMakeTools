@@ -1,4 +1,4 @@
 {
     "selector": "source.cmake | source.c | source.c++ | source.c++11",
-    "target": "cmakeide_build"
+    "target": "cmaketools_build"
 }

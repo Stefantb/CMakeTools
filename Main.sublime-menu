@@ -6,8 +6,8 @@
         "children":
         [
             {
-                "caption": "CMakeIDE",
-                "id": "build_cmake_ide",
+                "caption": "CMakeTools",
+                "id": "build_cmake_tools",
                 "mnemonic": "C",
                 "children":
                 [
@@ -16,7 +16,7 @@
                     {
                         "caption" : "Set Active Config",
                         "command": "show_overlay",
-                        "args": {"overlay": "command_palette", "text": "CMakeIDE: Set Active Config"},
+                        "args": {"overlay": "command_palette", "text": "CMakeTools: Set Active Config"},
                         "mnemonic": "o",
                     }
                 ]
@@ -34,8 +34,8 @@
                 "children":
                 [
                     {
-                        "caption": "CMakeIDE",
-                        "id": "cmakeide",
+                        "caption": "CMakeTools",
+                        "id": "cmaketools",
                         "children":
                         [
                             {
@@ -44,7 +44,7 @@
                                 "mnemonic": "S",
                                 "args":
                                 {
-                                    "base_file": "${packages}/CMakeIDE/CMakeIDE.sublime-settings"
+                                    "base_file": "${packages}/CMakeTools/CMakeTools.sublime-settings"
                                 }
                             }
                         ]

@@ -23,7 +23,7 @@ logger = logging.get_logger(__name__)
 # *****************************************************************************
 #
 # *****************************************************************************
-class CmakeideRunCommand(sublime_plugin.WindowCommand):
+class CmaketoolsRunCommand(sublime_plugin.WindowCommand):
 
     def run(self, *args, **kwargs):
 

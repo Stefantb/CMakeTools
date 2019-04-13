@@ -96,14 +96,14 @@ class ActiveConfigHandler(sublime_plugin.ListInputHandler):
 # *****************************************************************************
 #
 # *****************************************************************************
-class CmakeideSetActiveConfigCommand(sublime_plugin.WindowCommand):
+class CmaketoolsSetActiveConfigCommand(sublime_plugin.WindowCommand):
 
     def __init__(self, text):
-        super(CmakeideSetActiveConfigCommand, self).__init__(text)
+        super(CmaketoolsSetActiveConfigCommand, self).__init__(text)
 
     def input(self, *args):
         logger.info(args)
-        settings = ps.CmakeIDESettings(self.window)
+        settings = ps.Settings(self.window)
         return ActiveConfigHandler(settings)
 
     def run(self, *args, active_config=None, new_config_name=None, **kwargs):
@@ -116,7 +116,7 @@ class CmakeideSetActiveConfigCommand(sublime_plugin.WindowCommand):
 
         logger.info('Ok then {}'.format(active_config))
 
-        settings = ps.CmakeIDESettings(self.window)
+        settings = ps.Settings(self.window)
         settings.current_configuration_name = active_config
 
         curr = settings.current_configuration

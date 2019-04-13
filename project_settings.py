@@ -93,29 +93,35 @@ class Configuration():
 # *****************************************************************************
 #
 # *****************************************************************************
-class CmakeIDESettings():
-    """docstring for CmakeIDESettings"""
+class Settings():
+    """docstring for Settings"""
 
     def __init__(self, window):
         self.window = window
         self.refresh()
 
+    @property
+    def _project_data(self):
+        project_data = self.window.project_data()
+        if project_data is None:
+            project_data = {}
+        return project_data
+
     def refresh(self):
         """Refresh the data of this object from file, discarding changes if any"""
-        self._data = self.window.project_data().get('settings', {}).get('cmake_ide', {})
+        self._data = self._project_data.get('settings', {}).get('cmake_tools', {})
 
     def commit(self):
         """Commit the state of this object to file"""
-        project_data = self.window.project_data()
-        project_data.setdefault('settings', {}).setdefault('cmake_ide', {})
-        project_data['settings']['cmake_ide'] = self._data
+        project_data = self._project_data
+        project_data.setdefault('settings', {}).setdefault('cmake_tools', {})
+        project_data['settings']['cmake_tools'] = self._data
         self.window.set_project_data(project_data)
 
     @property
     def is_cmake_project(self):
-        """Returns True if settings and cmake_ide exist in the project file"""
-        project_data = self.window.project_data()
-        return 'cmake_ide' in project_data.setdefault('settings', {})
+        """Returns True if settings and cmake_tools exist in the project file"""
+        return 'cmake_tools' in self._project_data.setdefault('settings', {})
 
     @property
     def current_configuration_name(self):
@@ -172,7 +178,7 @@ class CmakeIDESettings():
 
         # try getting it from global settings
         logger.info('Not found in global project settings')
-        settings = sublime.load_settings("CMakeIDE.sublime-settings")
+        settings = sublime.load_settings("CMakeTools.sublime-settings")
         retval = settings.get(key, None)
         if retval:
             logger.info('Found in global settings: {}'.format(retval))

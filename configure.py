@@ -11,7 +11,7 @@ imp.reload(cmake_client)
 # *****************************************************************************
 #
 # *****************************************************************************
-class CmakeideConfigureCommand(Default.exec.ExecCommand):
+class CmaketoolsConfigureCommand(Default.exec.ExecCommand):
 
     def run(self, reconfigure=None, **kwargs):
 

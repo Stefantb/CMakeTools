@@ -20,12 +20,12 @@ logger = logging.get_logger(__name__)
 # *****************************************************************************
 #
 # *****************************************************************************
-class CmakeideBuildCommand(sublime_plugin.WindowCommand):
+class CmaketoolsBuildCommand(sublime_plugin.WindowCommand):
 
     def run(self, *args, **kwargs):
         logger.info('build called with {} {}'.format(args, kwargs))
 
-        settings = ps.CmakeIDESettings(self.window)
+        settings = ps.Settings(self.window)
 
         targets = build_tools.read_build_targets(
             settings.current_configuration.build_folder_expanded(self.window))
@@ -45,22 +45,26 @@ class CmakeideBuildCommand(sublime_plugin.WindowCommand):
 
             if target:
                 self.window.run_command(
-                    "cmakeide_exec", target
+                    "cmaketools_exec", target
                 )
             else:
                 logger.info('build target {} not found'.format(build_target_id))
+                logger.info('build targets {}'.format(targets))
+                self.window.run_command(
+                    "cmaketools_build", {'choose_target': True}
+                )
 
     def on_new_build_target_selected(self, index):
         selected_target = self.current_target_selection[index]
         logger.info('build target {} selected'.format(selected_target))
 
-        settings = ps.CmakeIDESettings(self.window)
+        settings = ps.Settings(self.window)
         current = settings.current_configuration
         if current:
             current.build_target = selected_target
 
             self.window.run_command(
-                "cmakeide_build", {"build_target_id": selected_target})
+                "cmaketools_build", {"build_target_id": selected_target})
 
             logger.info(settings.current_configuration.build_target)
             settings.commit()
