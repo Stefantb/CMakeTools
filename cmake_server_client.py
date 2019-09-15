@@ -1,14 +1,16 @@
 import json
 import time
 import imp
-import itertools
+# import itertools
 import os
 
 import sublime
 import Default.exec
 
-from . import build_tools
 from . import logging
+from .cmake_configuration import CMakeConfiguration
+from .output_panel import OutputPanel
+from .cmake_target import CMakeTarget
 
 
 # *****************************************************************************
@@ -21,106 +23,7 @@ logger = logging.get_logger(__name__)
 # *****************************************************************************
 #
 # *****************************************************************************
-class CMakeConfiguration:
-
-    __slots__ = ('cmake_binary', 'source_folder',
-                 'build_folder', 'generator', 'arguments')
-
-    def __init__(self, cmake_binary, source_folder: str, build_folder: str, generator: str, arguments: dict):
-        self.cmake_binary = cmake_binary
-        self.source_folder = source_folder
-        self.build_folder = build_folder
-        self.generator = generator
-        self.arguments = arguments
-
-    def __str__(self):
-        return 'CMakeConfiguration({},{},{},{},{}'.format(
-            self.cmake_binary,
-            self.source_folder,
-            self.build_folder,
-            self.generator,
-            self.arguments
-        )
-
-    def __repr__(self):
-        return self.__str__()
-
-
-# *****************************************************************************
-#
-# *****************************************************************************
-class CMakeTarget:
-    # possible_types_from_cmake:
-    # 'STATIC_LIBRARY'
-    # 'MODULE_LIBRARY'
-    # 'SHARED_LIBRARY'
-    # 'OBJECT_LIBRARY'
-    # 'EXECUTABLE'
-    # 'UTILITY'
-    # 'INTERFACE_LIBRARY'
-
-    __slots__ = ("name", "fullname", "type",
-                 "build_directory", "is_rebuild")
-
-    def __init__(self, name, fullname, type, build_directory):
-        self.name = name
-        self.fullname = fullname
-        self.type = type
-        self.build_directory = build_directory
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __str__(self):
-        return 'CMakeTarget({},{},{},{},'.format(
-            self.name,
-            self.fullname,
-            self.type,
-            self.build_directory
-        )
-
-    def __hash__(self):
-        return hash(self.name)
-
-
-# *****************************************************************************
-#
-# *****************************************************************************
-class OutputPanel:
-
-    def __init__(self, window, source_folder):
-        self.window = window
-
-        self.name = "cmake.configure"
-
-        self.view = window.create_output_panel(self.name, True)
-        self.view.settings().set("result_file_regex", r'CMake\s(?:Error|Warning)'
-                            r'(?:\s\(dev\))?\sat\s(.+):(\d+)()\s?\(?(\w*)\)?:')
-
-        self.view.set_syntax_file(
-            "Packages/CMakeTools/Syntax/Configure.sublime-syntax")
-
-        self.view.settings().set("result_base_dir", source_folder)
-
-    def show(self):
-        self.window.run_command("show_panel", {"panel": "output.cmake.configure"})
-
-    def append(self, message):
-
-        self.window.run_command("show_panel",
-                                {"panel": "output.{}".format(self.name)})
-
-        self.view.run_command("append", {
-            "characters": message + "\n",
-            "force": True,
-            "scroll_to_end": True
-        })
-
-
-# *****************************************************************************
-#
-# *****************************************************************************
-class CMakeProtocolHandler(Default.exec.ProcessListener):
+class CMakeServerClient(Default.exec.ProcessListener):
 
     _BEGIN_TOKEN = '[== "CMake Server" ==['
     _END_TOKEN = ']== "CMake Server" ==]'
@@ -128,11 +31,12 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
 
     def __init__(self,
                  window,
-                 cmake_configuration):
+                 cmake_configuration: CMakeConfiguration):
 
         self.window = window
-        self.cmake_binary_path = cmake_configuration.cmake_binary
         self.cmake_configuration = cmake_configuration
+
+        self.cmake_binary_path = cmake_configuration.cmake_binary
         self.on_code_model_ready = None
 
         self.is_ready = False
@@ -140,9 +44,9 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         self.data_parts = ''
         self.inside_json_object = False
 
-        self.config_output = OutputPanel(self.window, cmake_configuration.source_folder)
+        self.config_output = OutputPanel(self.window)
 
-        logger.info('CMakeProtocolHandler initialized with {}'.format(cmake_configuration))
+        logger.debug('CMakeServerClient initialized with {}'.format(cmake_configuration))
 
 
     # *****************************************************************************
@@ -152,7 +56,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         cmd = [self.cmake_binary_path, "-E",
                "server", "--experimental", "--debug"]
 
-        logger.info('Starting server with: {}'.format(cmd))
+        logger.debug('Starting server with: {}'.format(cmd))
 
         self.config_output.append('=' * 80)
         self.config_output.append(' '.join(cmd))
@@ -162,10 +66,10 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
 
     def configure(self):
         if not self.is_ready:
-            logger.info('server not ready to take commands')
+            logger.debug('server not ready to take commands')
             return
         if self.is_working:
-            logger.info('server already working')
+            logger.debug('server already working')
             return
         self._configure()
 
@@ -185,7 +89,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
     #
     # *****************************************************************************
     def __del__(self):
-        logger.info('CMakeProtocolHandler.__del__()')
+        logger.debug('CMakeServerClient.__del__()')
         if self.proc:
             self.proc.kill()
 
@@ -238,10 +142,10 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
     # *****************************************************************************
     #  Send
     # *****************************************************************************
-    @logging.log_method_call(logger)
+    # @logging.log_method_call(logger)
     def _send_text(self, json_data):
         while not hasattr(self, "proc"):
-            logger.info('terrible hack :(')
+            logger.debug('terrible hack :(')
             time.sleep(0.01)
         self.proc.proc.stdin.write(json_data)
         self.proc.proc.stdin.flush()
@@ -315,7 +219,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         data = json.loads(json_data)
         self._process_data(data)
 
-    @logging.log_method_call(logger)
+    # @logging.log_method_call(logger)
     def _process_data(self, data):
         t = data.pop("type")
         if t == "hello":
@@ -331,8 +235,8 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         elif t == "signal":
             self._receive_signal(data)
         else:
-            logger.info('CMakeTools: Received unknown type "{}"'.format(t))
-            logger.info(data)
+            logger.debug('CMakeTools: Received unknown type "{}"'.format(t))
+            logger.debug(data)
 
     def _receive_hello(self, data):
         self._handshake()
@@ -358,7 +262,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         elif reply == "cache":
             self._handle_reply_cache(data)
         else:
-            logger.info("CMakeTools: received unknown reply type:", reply)
+            logger.debug("CMakeTools: received unknown reply type:", reply)
 
     def _receive_error(self, data):
         in_reply_to = data["inReplyTo"]
@@ -409,8 +313,8 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
 
     def _receive_signal(self, data):
         signal_name = data["name"]
-        logger.info("received signal")
-        logger.info(data)
+        logger.debug("received signal")
+        logger.debug(data)
 
         if (signal_name == "dirty" and not self.is_working):
             pass
@@ -446,7 +350,7 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
         self.save_codemodel_to_file(configurations)
 
         for configuration in configurations:
-
+            config_name = configuration.get('name')
             projects = configuration.get('projects')
             for project in projects:
                 # project_name = project.get('name')
@@ -461,8 +365,9 @@ class CMakeProtocolHandler(Default.exec.ProcessListener):
                     # target_artifacts = target.get('artifacts')
                     cmake_targets.append(CMakeTarget(name=target_name,
                                                      fullname=target_fullname,
-                                                     type=target_type,
-                                                     build_directory=target_build_directory))
+                                                     target_type=target_type,
+                                                     build_directory=target_build_directory,
+                                                     configuration=config_name))
         if self.on_code_model_ready:
             self.on_code_model_ready(cmake_targets, self.cmake_configuration)
         self.is_working = False

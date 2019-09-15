@@ -10,13 +10,17 @@ from . import compdb_api
 from . import project_settings as ps
 from . import build_tools
 from .check_output import check_output
-from . import cmake_protocol as protocol
+from . import cmake_server_client as server_client
+from . import cmake_file_client as file_client
 from . import logging
+from .cmake_configuration import CMakeConfiguration
+from .output_panel import OutputPanel
 
 imp.reload(ps)
 imp.reload(build_tools)
 imp.reload(logging)
-imp.reload(protocol)
+imp.reload(server_client)
+imp.reload(file_client)
 
 
 # *****************************************************************************
@@ -77,7 +81,7 @@ class CMakeClient:
         try:
             command = "{cmake_binary} -E capabilities".format(
                 cmake_binary=cmake_binary)
-            logger.info("running", command)
+            logger.info("running {}".format(command))
             output = check_output(command)
             return json.loads(output)
 
@@ -91,7 +95,7 @@ class CMakeClient:
             return {"error": None}
 
     @classmethod
-    def get_protocl_handler(cls, window, recreate=False) -> protocol.CMakeProtocolHandler:
+    def get_protocl_handler(cls, window, recreate=False):
         if recreate:
             cls._handlers[window.id()] = None
 
@@ -117,14 +121,21 @@ class CMakeClient:
                     arguments['CMAKE_BUILD_TYPE'] = item
                     break
 
-            configuration = protocol.CMakeConfiguration(cmake_binary=cmake_binary,
-                                                        source_folder=source_directory,
-                                                        build_folder=build_directory,
-                                                        generator=generator,
-                                                        arguments=arguments
-                                                        )
+            configuration = CMakeConfiguration(cmake_binary=cmake_binary,
+                                               source_folder=source_directory,
+                                               build_folder=build_directory,
+                                               generator=generator,
+                                               arguments=arguments
+                                               )
 
-            handler = protocol.CMakeProtocolHandler(window, configuration)
+
+            caps = CMakeClient.get_capabilities(cmake_binary)
+
+            handler = None
+            if caps.get('fileApi', None):
+                handler = file_client.CMakeFileClient(OutputPanel(window), configuration)
+            else:
+                handler = server_client.CMakeServerClient(window, configuration)
             cls._handlers[window.id()] = handler
         else:
             logger.info('handler found for window {}'.format(window.id()))

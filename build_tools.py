@@ -88,18 +88,20 @@ def create_build_targets(cmake_targets, cmake_settings):
 
     for target in cmake_targets:
 
-        cmd = [cmake_settings.cmake_binary, '--build', '.', '--target', target.name]
+        id_name = '{}-{}'.format(target.name, target.configuration)
+
+        cmd = [cmake_settings.cmake_binary, '--build', '.', '--target', target.name, '--config', target.configuration]
         build_targets.append({
-            'id': target.name,
+            'id': id_name,
             'cmd': cmd,
             'file_regex': file_regex,
             'syntax': syntax,
             'working_dir': cmake_settings.build_folder
         })
 
-        cmd = [cmake_settings.cmake_binary, '--build', '.', '--target', target.name, '--clean-first']
+        cmd = [cmake_settings.cmake_binary, '--build', '.', '--target', target.name, '--config', target.configuration, '--clean-first']
         build_targets.append({
-            'id': target.name + '-rebuild',
+            'id': id_name + '-rebuild',
             'cmd': cmd,
             'file_regex': file_regex,
             'syntax': syntax,
