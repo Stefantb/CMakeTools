@@ -71,9 +71,13 @@ class CMakeClient:
 
     def __init__(self, window, recreate=False):
         self.window = window
-        self.handler = CMakeClient.get_protocl_handler(window, recreate)
-        self.handler.on_code_model_ready = self._on_code_model_ready
-        self.handler.start_connection()
+        self.handler = None
+        try:
+            self.handler = CMakeClient.get_protocl_handler(window, recreate)
+            self.handler.on_code_model_ready = self._on_code_model_ready
+            self.handler.start_connection()
+        except Exception as e:
+            logger.error(e)
 
     @staticmethod
     def get_capabilities(cmake_binary):
@@ -102,6 +106,7 @@ class CMakeClient:
         handler = cls._handlers.get(window.id(), None)
         if handler is None:
             logger.info('Instantiating new handler for window {}'.format(window.id()))
+
             settings = ps.Settings(window)
             cmake_binary = settings.get_multilevel_setting('cmake_binary')
 
@@ -143,7 +148,8 @@ class CMakeClient:
         return handler
 
     def configure(self):
-        self.handler.configure()
+        if self.handler:
+            self.handler.configure()
 
     def _on_code_model_ready(self, cmake_targets, config):
 

@@ -12,6 +12,10 @@ imp.reload(logging)
 logger = logging.get_logger(__name__)
 
 
+def unique_configuration_id(name, configuration):
+    return '{}-{}'.format(name, configuration.lower())
+
+
 # *****************************************************************************
 #
 # *****************************************************************************
@@ -89,6 +93,10 @@ class Configuration():
         build_folder = sublime.expand_variables(self._data.get('source_folder', ''), variables)
         return build_folder
 
+    @property
+    def unique_id(self):
+        return unique_configuration_id(self.name, self.configuration)
+
 
 # *****************************************************************************
 #
@@ -103,8 +111,12 @@ class Settings():
     @property
     def _project_data(self):
         project_data = self.window.project_data()
-        if project_data is None:
-            project_data = {}
+        # print('project dta:')
+        # print(project_data)
+        # print(type(project_data))
+        # print('end project dta:')
+        if not isinstance(project_data, (dict)):
+            raise Exception('project data could not be loaded {}'.format(project_data))
         return project_data
 
     def refresh(self):
@@ -124,14 +136,14 @@ class Settings():
         return 'cmake_tools' in self._project_data.setdefault('settings', {})
 
     @property
-    def current_configuration_name(self):
+    def current_configuration_id(self):
         """Returns none if not defined in the file"""
-        return self._data.get('current_configuration_name', None)
+        return self._data.get('current_configuration_id', None)
 
-    @current_configuration_name.setter
-    def current_configuration_name(self, config_name):
+    @current_configuration_id.setter
+    def current_configuration_id(self, config_name):
         """a"""
-        self._data['current_configuration_name'] = config_name
+        self._data['current_configuration_id'] = config_name
 
     @property
     def configurations(self):
@@ -144,14 +156,14 @@ class Settings():
         """a"""
         self._data['configurations'] = [item.data() for item in configurations]
 
-    def find_configuration_by_name(self, name):
-        return next((x for x in self.configurations if x.name == name), None)
+    def find_configuration_by_id(self, id):
+        return next((x for x in self.configurations if x.unique_id == id), None)
 
     @property
     def current_configuration(self) -> Configuration:
         """Returns none if not defined in the file"""
-        if self.current_configuration_name:
-            return self.find_configuration_by_name(self.current_configuration_name)
+        if self.current_configuration_id:
+            return self.find_configuration_by_id(self.current_configuration_id)
         else:
             return None
 
@@ -159,6 +171,14 @@ class Settings():
     def cmake_binary(self):
         """a"""
         return self._data.get('cmake_binary', '')
+
+    def try_expand(self, retval, expand):
+        if expand:
+            variables = self.window.extract_variables()
+            retval = sublime.expand_variables(retval, variables)
+            logger.info('Expanded to: {}'.format(retval))
+
+        return retval
 
     def get_multilevel_setting(self, key, default=None, expand=False):
         logger.info('Getting multilevel setting for key: {}'.format(key))
@@ -169,12 +189,14 @@ class Settings():
         retval = getattr(self.current_configuration, key, None)
         if retval:
             logger.info('Found in projects current config: {}'.format(retval))
+            return self.try_expand(retval, expand)
 
         # try getting it from global project settings
         logger.info('Not found in current configuration')
         retval = getattr(self, key, None)
         if retval:
             logger.info('Found in global project: {}'.format(retval))
+            return self.try_expand(retval, expand)
 
         # try getting it from global settings
         logger.info('Not found in global project settings')
@@ -182,14 +204,8 @@ class Settings():
         retval = settings.get(key, None)
         if retval:
             logger.info('Found in global settings: {}'.format(retval))
+            return self.try_expand(retval, expand)
         else:
             logger.info('Gave up returning default: {}'.format(default))
             retval = default
-
-        #
-        if expand:
-            variables = self.window.extract_variables()
-            retval = sublime.expand_variables(retval, variables)
-            logger.info('Expanded to: {}'.format(retval))
-
-        return retval
+            return self.try_expand(retval, expand)
